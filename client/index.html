@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DoseWise</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">DW</span>
+          <div>
+            <strong>DoseWise</strong>
+            <small>Care dashboard</small>
+          </div>
+        </div>
+        <nav class="nav-list" aria-label="Main navigation">
+          <a href="#dashboard">Dashboard</a>
+          <a href="#medicines">Medicines</a>
+          <a href="#appointments">Appointments</a>
+          <a href="#notes">Notes</a>
+        </nav>
+      </aside>
+
+      <section class="content">
+        <header class="topbar" id="dashboard">
+          <div>
+            <p class="eyebrow">Personal health tracker</p>
+            <h1>Today&apos;s care plan</h1>
+          </div>
+          <div class="profile-chip">
+            <span class="avatar">A</span>
+            <span>Demo Patient</span>
+          </div>
+        </header>
+
+        <section class="summary-grid" aria-label="Care summary">
+          <article class="metric">
+            <span>Medicines</span>
+            <strong id="totalMedicines">0</strong>
+            <small>Total scheduled doses</small>
+          </article>
+          <article class="metric">
+            <span>Due Today</span>
+            <strong id="dueToday">0</strong>
+            <small>Needs attention today</small>
+          </article>
+          <article class="metric">
+            <span>Taken</span>
+            <strong id="takenToday">0</strong>
+            <small>Completed today</small>
+          </article>
+          <article class="metric">
+            <span>Appointments</span>
+            <strong id="upcomingAppointments">0</strong>
+            <small>Upcoming visits</small>
+          </article>
+        </section>
+
+        <section class="work-grid">
+          <article class="panel large-panel" id="medicines">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Medicine schedule</p>
+                <h2>Manage doses</h2>
+              </div>
+            </div>
+
+            <form class="form-grid" id="medicineForm">
+              <label>
+                Medicine
+                <input name="name" placeholder="Paracetamol" required />
+              </label>
+              <label>
+                Dosage
+                <input name="dosage" placeholder="500 mg" required />
+              </label>
+              <label>
+                Date
+                <input name="date" type="date" required />
+              </label>
+              <label>
+                Time
+                <input name="time" type="time" required />
+              </label>
+              <label>
+                Category
+                <input name="category" placeholder="Pain relief" />
+              </label>
+              <label>
+                Instructions
+                <input name="instructions" placeholder="Take after food" />
+              </label>
+              <button type="submit">Add Medicine</button>
+            </form>
+
+            <div class="list" id="medicineList"></div>
+          </article>
+
+          <aside class="panel">
+            <p class="eyebrow">Next visit</p>
+            <h2 id="nextAppointmentTitle">No appointment</h2>
+            <p class="muted" id="nextAppointmentMeta">Add an appointment to track upcoming care.</p>
+          </aside>
+        </section>
+
+        <section class="work-grid">
+          <article class="panel" id="appointments">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Appointments</p>
+                <h2>Doctor visits</h2>
+              </div>
+            </div>
+            <form class="stack-form" id="appointmentForm">
+              <input name="doctor" placeholder="Doctor name" required />
+              <input name="specialty" placeholder="Specialty" />
+              <div class="two-col">
+                <input name="date" type="date" required />
+                <input name="time" type="time" required />
+              </div>
+              <input name="location" placeholder="Location" />
+              <input name="reason" placeholder="Reason for visit" />
+              <button type="submit">Add Appointment</button>
+            </form>
+            <div class="list compact-list" id="appointmentList"></div>
+          </article>
+
+          <article class="panel" id="notes">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Health journal</p>
+                <h2>Notes</h2>
+              </div>
+            </div>
+            <form class="stack-form" id="noteForm">
+              <input name="title" placeholder="Note title" required />
+              <select name="mood">
+                <option>Good</option>
+                <option selected>Okay</option>
+                <option>Tired</option>
+                <option>Unwell</option>
+              </select>
+              <textarea name="body" rows="4" placeholder="Symptoms, recovery notes, or doctor advice" required></textarea>
+              <button type="submit">Save Note</button>
+            </form>
+            <div class="list compact-list" id="noteList"></div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/src/app.js"></script>
+  </body>
+</html>

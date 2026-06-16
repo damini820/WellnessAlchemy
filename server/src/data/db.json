@@ -1,0 +1,63 @@
+{
+  "medicines": [
+    {
+      "id": "med-1",
+      "name": "Vitamin D3",
+      "dosage": "1000 IU",
+      "date": "2026-06-16",
+      "time": "08:30",
+      "category": "Supplement",
+      "instructions": "Take after breakfast",
+      "status": "taken"
+    },
+    {
+      "id": "med-2",
+      "name": "Metformin",
+      "dosage": "500 mg",
+      "date": "2026-06-16",
+      "time": "20:00",
+      "category": "Diabetes",
+      "instructions": "Take with dinner",
+      "status": "pending"
+    },
+    {
+      "id": "med-3",
+      "name": "Iron",
+      "dosage": "65 mg",
+      "date": "2026-06-17",
+      "time": "10:00",
+      "category": "Supplement",
+      "instructions": "Avoid tea or coffee for one hour",
+      "status": "pending"
+    }
+  ],
+  "appointments": [
+    {
+      "id": "appt-1",
+      "doctor": "Dr. Neha Shah",
+      "specialty": "General Physician",
+      "date": "2026-06-19",
+      "time": "11:30",
+      "location": "Apollo Clinic",
+      "reason": "Routine checkup"
+    },
+    {
+      "id": "appt-2",
+      "doctor": "Dr. Arjun Mehta",
+      "specialty": "Dermatologist",
+      "date": "2026-06-25",
+      "time": "16:00",
+      "location": "City Care Hospital",
+      "reason": "Follow-up visit"
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-1",
+      "title": "Morning symptoms",
+      "body": "Mild headache after waking up. Improved after hydration.",
+      "mood": "Okay",
+      "createdAt": "2026-06-16T07:45:00.000Z"
+    }
+  ]
+}

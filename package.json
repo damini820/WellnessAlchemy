@@ -1,0 +1,21 @@
+{
+  "name": "dosewise",
+  "version": "1.0.0",
+  "description": "A healthcare management app for medicine schedules, appointment tracking, and patient notes.",
+  "private": true,
+  "scripts": {
+    "start": "node server/src/index.js",
+    "dev": "node server/src/index.js"
+  },
+  "keywords": [
+    "healthcare",
+    "medicine-reminder",
+    "patient-dashboard",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
