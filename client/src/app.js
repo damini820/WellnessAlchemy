@@ -12,6 +12,8 @@ const els = {
   appShell: document.querySelector("#appShell"),
   authForm: document.querySelector("#authForm"),
   authName: document.querySelector("#authName"),
+  authEmail: document.querySelector('input[name="email"]'),
+  authPassword: document.querySelector('input[name="password"]'),
   authSubmit: document.querySelector("#authSubmit"),
   authToggle: document.querySelector("#authToggle"),
   authFeedback: document.querySelector("#authFeedback"),
@@ -298,6 +300,15 @@ function setAuthMode(mode) {
   els.authSubmit.textContent = isSignup ? "Create Account" : "Log In";
   els.authSubmit.dataset.defaultText = els.authSubmit.textContent;
   els.authToggle.textContent = isSignup ? "Use existing account" : "Create new account";
+  if (isSignup && els.authEmail.value === "demo@dosewise.app") {
+    els.authEmail.value = "";
+    els.authPassword.value = "";
+    els.authName.focus();
+  }
+  if (!isSignup && !els.authEmail.value) {
+    els.authEmail.value = "demo@dosewise.app";
+    els.authPassword.value = "secret";
+  }
   setFeedback(els.authFeedback);
 }
 
@@ -349,12 +360,17 @@ async function load() {
 els.authForm.addEventListener("submit", async event => {
   event.preventDefault();
   setFeedback(els.authFeedback);
+  const authData = formData(event.currentTarget);
+  if (state.authMode === "signup" && authData.email.trim().toLowerCase() === "demo@dosewise.app") {
+    setFeedback(els.authFeedback, "The demo email already exists. Use a different email for signup, or choose existing account.");
+    return;
+  }
   setSubmitting(event.currentTarget, true, state.authMode === "signup" ? "Creating..." : "Logging in...");
   try {
     const path = state.authMode === "signup" ? "/api/auth/signup" : "/api/auth/login";
     const data = await api(path, {
       method: "POST",
-      body: JSON.stringify(formData(event.currentTarget))
+      body: JSON.stringify(authData)
     });
     state.token = data.token;
     localStorage.setItem("dosewise_token", data.token);
