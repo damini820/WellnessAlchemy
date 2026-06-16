@@ -478,6 +478,10 @@ label {
   padding: 18px;
 }
 
+.modal-backdrop.hidden {
+  display: none;
+}
+
 .modal {
   width: min(100%, 420px);
   border-radius: 8px;
