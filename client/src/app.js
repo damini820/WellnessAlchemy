@@ -61,20 +61,32 @@ function setDefaultDates() {
 }
 
 async function api(path, options = {}) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 8000);
   const headers = { "Content-Type": "application/json" };
   if (state.token) {
     headers.Authorization = `Bearer ${state.token}`;
   }
 
-  const response = await fetch(path, {
-    headers,
-    ...options
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Request failed");
+  try {
+    const response = await fetch(path, {
+      headers,
+      signal: controller.signal,
+      ...options
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Request failed");
+    }
+    return data;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error("The server is taking too long to respond. Please restart the app and try again.");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
   }
-  return data;
 }
 
 function toast(message) {
