@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "start": "node server/src/index.js",
-    "dev": "node server/src/index.js"
+    "dev": "node server/src/index.js",
+    "check": "node --check server/src/index.js && node --check client/src/app.js && node -e \"JSON.parse(require('fs').readFileSync('server/src/data/db.json','utf8')); console.log('checks passed')\""
   },
   "keywords": [
     "healthcare",

@@ -1,7 +1,17 @@
 {
+  "users": [
+    {
+      "id": "user-1",
+      "name": "Demo Patient",
+      "email": "demo@dosewise.app",
+      "passwordHash": "2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b"
+    }
+  ],
+  "sessions": [],
   "medicines": [
     {
       "id": "med-1",
+      "userId": "user-1",
       "name": "Vitamin D3",
       "dosage": "1000 IU",
       "date": "2026-06-16",
@@ -12,6 +22,7 @@
     },
     {
       "id": "med-2",
+      "userId": "user-1",
       "name": "Metformin",
       "dosage": "500 mg",
       "date": "2026-06-16",
@@ -22,6 +33,7 @@
     },
     {
       "id": "med-3",
+      "userId": "user-1",
       "name": "Iron",
       "dosage": "65 mg",
       "date": "2026-06-17",
@@ -34,6 +46,7 @@
   "appointments": [
     {
       "id": "appt-1",
+      "userId": "user-1",
       "doctor": "Dr. Neha Shah",
       "specialty": "General Physician",
       "date": "2026-06-19",
@@ -43,6 +56,7 @@
     },
     {
       "id": "appt-2",
+      "userId": "user-1",
       "doctor": "Dr. Arjun Mehta",
       "specialty": "Dermatologist",
       "date": "2026-06-25",
@@ -54,6 +68,7 @@
   "notes": [
     {
       "id": "note-1",
+      "userId": "user-1",
       "title": "Morning symptoms",
       "body": "Mild headache after waking up. Improved after hydration.",
       "mood": "Okay",

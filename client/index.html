@@ -7,7 +7,30 @@
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
-    <main class="app-shell">
+    <section class="auth-screen" id="authScreen">
+      <div class="auth-panel">
+        <div class="brand auth-brand">
+          <span class="brand-mark">DW</span>
+          <div>
+            <strong>DoseWise</strong>
+            <small>Care dashboard</small>
+          </div>
+        </div>
+        <p class="eyebrow">Secure access</p>
+        <h1>Track daily care with a simple patient dashboard.</h1>
+        <form class="stack-form" id="authForm">
+          <input name="name" id="authName" placeholder="Full name" />
+          <input name="email" type="email" placeholder="Email address" value="demo@dosewise.app" required />
+          <input name="password" type="password" placeholder="Password" value="secret" required />
+          <button type="submit" id="authSubmit">Log In</button>
+          <p class="form-feedback" id="authFeedback" aria-live="polite"></p>
+        </form>
+        <button class="ghost-button full-button" id="authToggle" type="button">Create new account</button>
+        <p class="muted auth-hint">Demo login: demo@dosewise.app / secret</p>
+      </div>
+    </section>
+
+    <main class="app-shell hidden" id="appShell">
       <aside class="sidebar">
         <div class="brand">
           <span class="brand-mark">DW</span>
@@ -32,7 +55,8 @@
           </div>
           <div class="profile-chip">
             <span class="avatar">A</span>
-            <span>Demo Patient</span>
+            <span id="profileName">Demo Patient</span>
+            <button class="ghost-button chip-button" id="logoutButton" type="button">Logout</button>
           </div>
         </header>
 
@@ -94,8 +118,25 @@
                 <input name="instructions" placeholder="Take after food" />
               </label>
               <button type="submit">Add Medicine</button>
+              <p class="form-feedback wide-feedback" id="medicineFeedback" aria-live="polite"></p>
             </form>
 
+            <div class="filter-bar" aria-label="Medicine filters">
+              <input id="medicineSearch" type="search" placeholder="Search medicine, dosage, or category" />
+              <select id="medicineStatusFilter" aria-label="Filter by medicine status">
+                <option value="all">All statuses</option>
+                <option value="pending">Pending</option>
+                <option value="taken">Taken</option>
+                <option value="missed">Missed</option>
+              </select>
+              <select id="medicineDateFilter" aria-label="Filter by medicine date">
+                <option value="all">All dates</option>
+                <option value="today">Today</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="past">Past</option>
+              </select>
+            </div>
+            <p class="muted result-count" id="medicineResultCount">Showing 0 medicines</p>
             <div class="list" id="medicineList"></div>
           </article>
 
@@ -124,7 +165,18 @@
               <input name="location" placeholder="Location" />
               <input name="reason" placeholder="Reason for visit" />
               <button type="submit">Add Appointment</button>
+              <p class="form-feedback" id="appointmentFeedback" aria-live="polite"></p>
             </form>
+            <div class="filter-bar appointment-filter-bar" aria-label="Appointment filters">
+              <input id="appointmentSearch" type="search" placeholder="Search doctor, specialty, or location" />
+              <select id="appointmentDateFilter" aria-label="Filter by appointment date">
+                <option value="all">All dates</option>
+                <option value="today">Today</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="past">Past</option>
+              </select>
+            </div>
+            <p class="muted result-count" id="appointmentResultCount">Showing 0 appointments</p>
             <div class="list compact-list" id="appointmentList"></div>
           </article>
 
@@ -145,12 +197,36 @@
               </select>
               <textarea name="body" rows="4" placeholder="Symptoms, recovery notes, or doctor advice" required></textarea>
               <button type="submit">Save Note</button>
+              <p class="form-feedback" id="noteFeedback" aria-live="polite"></p>
             </form>
+            <div class="filter-bar note-filter-bar" aria-label="Note filters">
+              <input id="noteSearch" type="search" placeholder="Search notes or symptoms" />
+              <select id="noteMoodFilter" aria-label="Filter by note mood">
+                <option value="all">All moods</option>
+                <option value="Good">Good</option>
+                <option value="Okay">Okay</option>
+                <option value="Tired">Tired</option>
+                <option value="Unwell">Unwell</option>
+              </select>
+            </div>
+            <p class="muted result-count" id="noteResultCount">Showing 0 notes</p>
             <div class="list compact-list" id="noteList"></div>
           </article>
         </section>
       </section>
     </main>
+
+    <section class="modal-backdrop hidden" id="confirmModal" aria-labelledby="confirmTitle" aria-modal="true" role="dialog">
+      <div class="modal">
+        <p class="eyebrow">Confirm action</p>
+        <h2 id="confirmTitle">Delete item?</h2>
+        <p class="muted" id="confirmMessage">This action cannot be undone.</p>
+        <div class="modal-actions">
+          <button class="ghost-button" id="confirmCancel" type="button">Cancel</button>
+          <button class="danger-button strong-danger" id="confirmDelete" type="button">Delete</button>
+        </div>
+      </div>
+    </section>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="/src/app.js"></script>

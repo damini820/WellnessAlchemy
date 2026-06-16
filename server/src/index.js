@@ -1,7 +1,7 @@
 const http = require("http");
 const fs = require("fs/promises");
 const path = require("path");
-const { randomUUID } = require("crypto");
+const { createHash, randomUUID } = require("crypto");
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "127.0.0.1";
@@ -54,20 +54,28 @@ function parseBody(req) {
   });
 }
 
-function buildSummary(db) {
+function getUserData(db, userId) {
+  return {
+    medicines: db.medicines.filter(item => item.userId === userId),
+    appointments: db.appointments.filter(item => item.userId === userId),
+    notes: db.notes.filter(item => item.userId === userId)
+  };
+}
+
+function buildSummary(records) {
   const today = new Date().toISOString().slice(0, 10);
-  const todaysMedicines = db.medicines.filter(item => item.date === today);
-  const nextAppointment = db.appointments
+  const todaysMedicines = records.medicines.filter(item => item.date === today);
+  const nextAppointment = records.appointments
     .filter(item => item.date >= today)
     .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))[0];
 
   return {
-    totalMedicines: db.medicines.length,
+    totalMedicines: records.medicines.length,
     dueToday: todaysMedicines.length,
     takenToday: todaysMedicines.filter(item => item.status === "taken").length,
     missedToday: todaysMedicines.filter(item => item.status === "missed").length,
-    upcomingAppointments: db.appointments.filter(item => item.date >= today).length,
-    notes: db.notes.length,
+    upcomingAppointments: records.appointments.filter(item => item.date >= today).length,
+    notes: records.notes.length,
     nextAppointment
   };
 }
@@ -76,17 +84,118 @@ function required(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function hashPassword(password) {
+  return createHash("sha256").update(password).digest("hex");
+}
+
+function publicUser(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email
+  };
+}
+
+function getBearerToken(req) {
+  const header = req.headers.authorization || "";
+  if (!header.startsWith("Bearer ")) {
+    return "";
+  }
+  return header.slice("Bearer ".length);
+}
+
+function requireUser(req, res, db) {
+  const token = getBearerToken(req);
+  const session = db.sessions.find(item => item.token === token);
+  if (!session) {
+    sendJson(res, 401, { message: "Please log in to continue." });
+    return null;
+  }
+
+  const user = db.users.find(item => item.id === session.userId);
+  if (!user) {
+    sendJson(res, 401, { message: "Session user was not found." });
+    return null;
+  }
+
+  return user;
+}
+
 async function handleApi(req, res, pathname) {
   const db = await readDb();
   const method = req.method || "GET";
 
+  if (method === "POST" && pathname === "/api/auth/signup") {
+    const body = await parseBody(req);
+    if (!required(body.name) || !required(body.email) || !required(body.password)) {
+      sendJson(res, 400, { message: "Name, email, and password are required." });
+      return;
+    }
+
+    const email = body.email.trim().toLowerCase();
+    if (db.users.some(user => user.email === email)) {
+      sendJson(res, 409, { message: "An account with this email already exists." });
+      return;
+    }
+
+    const user = {
+      id: randomUUID(),
+      name: body.name.trim(),
+      email,
+      passwordHash: hashPassword(body.password)
+    };
+    const session = {
+      token: randomUUID(),
+      userId: user.id,
+      createdAt: new Date().toISOString()
+    };
+
+    db.users.push(user);
+    db.sessions.push(session);
+    await writeDb(db);
+    sendJson(res, 201, { user: publicUser(user), token: session.token });
+    return;
+  }
+
+  if (method === "POST" && pathname === "/api/auth/login") {
+    const body = await parseBody(req);
+    const email = String(body.email || "").trim().toLowerCase();
+    const user = db.users.find(item => item.email === email);
+
+    if (!user || user.passwordHash !== hashPassword(String(body.password || ""))) {
+      sendJson(res, 401, { message: "Invalid email or password." });
+      return;
+    }
+
+    const session = {
+      token: randomUUID(),
+      userId: user.id,
+      createdAt: new Date().toISOString()
+    };
+    db.sessions.push(session);
+    await writeDb(db);
+    sendJson(res, 200, { user: publicUser(user), token: session.token });
+    return;
+  }
+
+  if (method === "GET" && pathname === "/api/auth/me") {
+    const user = requireUser(req, res, db);
+    if (!user) return;
+    sendJson(res, 200, publicUser(user));
+    return;
+  }
+
+  const user = requireUser(req, res, db);
+  if (!user) return;
+  const records = getUserData(db, user.id);
+
   if (method === "GET" && pathname === "/api/summary") {
-    sendJson(res, 200, buildSummary(db));
+    sendJson(res, 200, buildSummary(records));
     return;
   }
 
   if (method === "GET" && pathname === "/api/medicines") {
-    sendJson(res, 200, db.medicines);
+    sendJson(res, 200, records.medicines);
     return;
   }
 
@@ -99,6 +208,7 @@ async function handleApi(req, res, pathname) {
 
     const medicine = {
       id: randomUUID(),
+      userId: user.id,
       name: body.name.trim(),
       dosage: body.dosage.trim(),
       date: body.date,
@@ -122,7 +232,7 @@ async function handleApi(req, res, pathname) {
       return;
     }
 
-    const medicine = db.medicines.find(item => item.id === medicineStatusMatch[1]);
+    const medicine = db.medicines.find(item => item.id === medicineStatusMatch[1] && item.userId === user.id);
     if (!medicine) {
       sendJson(res, 404, { message: "Medicine not found." });
       return;
@@ -136,14 +246,14 @@ async function handleApi(req, res, pathname) {
 
   const medicineDeleteMatch = pathname.match(/^\/api\/medicines\/([^/]+)$/);
   if (method === "DELETE" && medicineDeleteMatch) {
-    db.medicines = db.medicines.filter(item => item.id !== medicineDeleteMatch[1]);
+    db.medicines = db.medicines.filter(item => item.id !== medicineDeleteMatch[1] || item.userId !== user.id);
     await writeDb(db);
     sendJson(res, 200, { ok: true });
     return;
   }
 
   if (method === "GET" && pathname === "/api/appointments") {
-    sendJson(res, 200, db.appointments);
+    sendJson(res, 200, records.appointments);
     return;
   }
 
@@ -156,6 +266,7 @@ async function handleApi(req, res, pathname) {
 
     const appointment = {
       id: randomUUID(),
+      userId: user.id,
       doctor: body.doctor.trim(),
       specialty: body.specialty || "General consultation",
       date: body.date,
@@ -171,14 +282,14 @@ async function handleApi(req, res, pathname) {
 
   const appointmentDeleteMatch = pathname.match(/^\/api\/appointments\/([^/]+)$/);
   if (method === "DELETE" && appointmentDeleteMatch) {
-    db.appointments = db.appointments.filter(item => item.id !== appointmentDeleteMatch[1]);
+    db.appointments = db.appointments.filter(item => item.id !== appointmentDeleteMatch[1] || item.userId !== user.id);
     await writeDb(db);
     sendJson(res, 200, { ok: true });
     return;
   }
 
   if (method === "GET" && pathname === "/api/notes") {
-    sendJson(res, 200, db.notes);
+    sendJson(res, 200, records.notes);
     return;
   }
 
@@ -191,6 +302,7 @@ async function handleApi(req, res, pathname) {
 
     const note = {
       id: randomUUID(),
+      userId: user.id,
       title: body.title.trim(),
       body: body.body.trim(),
       mood: body.mood || "Neutral",
